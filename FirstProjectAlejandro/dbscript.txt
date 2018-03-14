@@ -1,0 +1,145 @@
+CREATE DATABASE travels;
+
+CREATE TABLE public.country
+(
+    id serial NOT NULL,
+    name text NOT NULL,
+    flag bytea,
+    CONSTRAINT pk_country PRIMARY KEY (id)
+);
+
+CREATE TABLE public.place
+(
+    id serial NOT NULL,
+    name text NOT NULL,
+    id_country integer NOT NULL,
+    CONSTRAINT pk_place PRIMARY KEY (id),
+    CONSTRAINT fk_country_place FOREIGN KEY (id_country)
+        REFERENCES public.country (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+CREATE TABLE public.airplane
+(
+    id serial NOT NULL,
+    name text NOT NULL,
+    id_place integer NOT NULL,
+    iata text NOT NULL,
+    CONSTRAINT pk_airplane PRIMARY KEY (id),
+    CONSTRAINT fk_airplane_place FOREIGN KEY (id_place)
+        REFERENCES public.place (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+CREATE TABLE public.airline
+(
+    id serial NOT NULL,
+    id_from_country integer NOT NULL,
+    id_to_country integer NOT NULL,
+    duration double precision NOT NULL,
+    CONSTRAINT pk_airline PRIMARY KEY (id),
+    CONSTRAINT fk_from_country FOREIGN KEY (id_from_country)
+        REFERENCES public.country (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_to_country FOREIGN KEY (id_to_country)
+        REFERENCES public.country (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+CREATE TABLE public.hotel
+(
+    id serial NOT NULL,
+    name text NOT NULL,
+    photo bytea,
+    id_country integer NOT NULL,
+    id_place integer NOT NULL,
+    room_ammount integer,
+    CONSTRAINT pk_hotel PRIMARY KEY (id),
+    CONSTRAINT fk_hotel_country FOREIGN KEY (id_country)
+        REFERENCES public.country (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_hotel_place FOREIGN KEY (id_place)
+        REFERENCES public.place (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+ALTER TABLE public.hotel
+    ADD COLUMN order integer;
+ALTER TABLE public.hotel DROP COLUMN id_country;
+
+ALTER TABLE public.hotel DROP COLUMN photo;
+
+CREATE TABLE public.hotel_rate
+(
+    id serial NOT NULL,
+    price double precision NOT NULL,
+    id_hotel integer NOT NULL,
+    CONSTRAINT pk_hotel_rate PRIMARY KEY (id),
+    CONSTRAINT fk_rate_hotel FOREIGN KEY (id_hotel)
+        REFERENCES public.hotel (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+CREATE TABLE public.airline_rate
+(
+    id serial NOT NULL,
+    price double precision NOT NULL,
+    id_airline integer NOT NULL,
+    CONSTRAINT pk_airline_rate PRIMARY KEY (id),
+    CONSTRAINT fk_rate_airline FOREIGN KEY (id_airline)
+        REFERENCES public.airline (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+CREATE TABLE public.vehicle
+(
+    id serial NOT NULL,
+    make text NOT NULL,
+    model text NOT NULL,
+    type text,
+    price double precision NOT NULL,
+    ammount integer,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE public."user"
+(
+    id serial NOT NULL,
+    dni text NOT NULL,
+    name text NOT NULL,
+    password text NOT NULL,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE public."user"
+    ADD COLUMN type text NOT NULL;
+
+INSERT INTO public.user(dni, name, password, type) VALUES('207670429', 'Stefanie', '81dc9bdb52d04dc20036dbd8313ed055', 'admin');
+
+CREATE TABLE public.hotel_order
+(
+    id serial NOT NULL,
+    first_date date,
+    ast_date date,
+    adults integer,
+    kids integer,
+    id_user integer,
+    id_hotel integer,
+    CONSTRAINT pk_hotel_order PRIMARY KEY (id),
+    CONSTRAINT "fk-user_order" FOREIGN KEY (id_user)
+        REFERENCES public."user" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_hotel_order FOREIGN KEY (id_hotel)
+        REFERENCES public.hotel (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
